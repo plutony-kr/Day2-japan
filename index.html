@@ -59,28 +59,67 @@
           <tr><th>항목</th><th>금액</th></tr>
         </thead>
         <tbody>
-          <tr><td>항공</td><td>250,000원</td></tr>
-          <tr><td>숙소 (3박)</td><td>180,000원</td></tr>
-          <tr><td>식비</td><td>150,000원</td></tr>
-          <tr><td>교통</td><td>80,000원</td></tr>
+          <tr><td>항공</td><td data-amount="250000">250,000원</td></tr>
+          <tr><td>숙소 (3박)</td><td data-amount="180000">180,000원</td></tr>
+          <tr><td>식비</td><td data-amount="150000">150,000원</td></tr>
+          <tr><td>교통</td><td data-amount="80000">80,000원</td></tr>
         </tbody>
         <tfoot>
-          <tr><th>합계</th><th>660,000원</th></tr>
+          <tr><th>합계</th><th id="budget-total">660,000원</th></tr>
         </tfoot>
       </table>
     </section>
 
     <section id="checklist">
       <h2>준비물</h2>
-      <ul>
-        <li>여권</li>
-        <li>유심</li>
-        <li>1인 엔화 3만 엔</li>
-        <li>우산</li>
+      <ul id="checklist-items">
+        <li><label><input type="checkbox" data-key="passport"> 여권</label></li>
+        <li><label><input type="checkbox" data-key="sim"> 유심</label></li>
+        <li><label><input type="checkbox" data-key="yen"> 1인 엔화 3만 엔</label></li>
+        <li><label><input type="checkbox" data-key="umbrella"> 우산</label></li>
       </ul>
     </section>
 
   </main>
+
+  <script>
+    // 예산 합계: 항목 금액(data-amount)을 더해 표시
+    (function () {
+      var total = 0;
+      document.querySelectorAll('#budget [data-amount]').forEach(function (cell) {
+        total += Number(cell.dataset.amount);
+      });
+      document.getElementById('budget-total').textContent = total.toLocaleString('ko-KR') + '원';
+    })();
+
+    // 준비물 체크리스트: 체크 상태를 localStorage에 저장·복원
+    (function () {
+      var STORAGE_KEY = 'fukuoka-trip-checklist';
+      var boxes = document.querySelectorAll('#checklist-items input[type="checkbox"]');
+
+      function load() {
+        try {
+          return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+        } catch (e) {
+          return {};
+        }
+      }
+
+      function save() {
+        var state = {};
+        boxes.forEach(function (box) { state[box.dataset.key] = box.checked; });
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (e) { /* 저장이 막혀 있어도 체크는 동작 */ }
+      }
+
+      var saved = load();
+      boxes.forEach(function (box) {
+        box.checked = !!saved[box.dataset.key];
+        box.addEventListener('change', save);
+      });
+    })();
+  </script>
 
 </body>
 </html>
